@@ -1,16 +1,51 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Sentiment Analysis Dashboard</title>
-    <link rel="stylesheet" href="styles.css" />
+    <meta charset="UTF-8">
+    <title>Sentiment Analysis Dashboard – CSP451</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h2>Sentiment Analysis Input</h2>
-    <textarea id="textInput" placeholder="Enter text here"></textarea>
-    <button onclick="analyze()">Analyze</button>
+    <header class="top-bar">
+        <h1>Sentiment Analysis Dashboard (CosmosDB)</h1>
+        <p class="subtitle">
+            Option 1 – Azure Text Analytics • Logic App • Cosmos DB • Power BI
+        </p>
+    </header>
 
-    <h3>Result:</h3>
-    <div id="result"></div>
+    <main class="content">
+        <section class="card">
+            <h2>1. Enter Text to Analyze</h2>
+            <label for="textInput">Your text</label>
+            <textarea id="textInput" rows="4"
+                      placeholder="Type a short sentence, e.g. 'I am very happy today!'"></textarea>
+
+            <button id="analyzeBtn">Analyze Sentiment</button>
+
+            <p id="status" class="status"></p>
+        </section>
+
+        <section class="card">
+            <h2>2. Result</h2>
+            <div id="result" class="result">
+                <p class="placeholder">No analysis yet. Submit some text.</p>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>3. How It Works (Summary)</h2>
+            <ol>
+                <li>Browser sends your text to an Azure Logic App HTTP endpoint.</li>
+                <li>Logic App calls <strong>Text Analytics</strong> (Sentiment + Key Phrases).</li>
+                <li>Result is saved into <strong>Cosmos DB</strong> with scores and timestamp.</li>
+                <li>Power BI pulls the data and shows charts.</li>
+            </ol>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>CSP451 – Proof of Concept • Nur Mohammed Rasel (153510235)</p>
+    </footer>
 
     <script src="app.js"></script>
 </body>
