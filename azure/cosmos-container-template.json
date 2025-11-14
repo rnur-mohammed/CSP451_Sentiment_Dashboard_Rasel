@@ -1,0 +1,39 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "accountName": {
+      "type": "string"
+    },
+    "databaseName": {
+      "type": "string",
+      "defaultValue": "sentimentdb"
+    },
+    "containerName": {
+      "type": "string",
+      "defaultValue": "sentimentresults"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers",
+      "apiVersion": "2021-04-15",
+      "name": "[format('{0}/{1}/{2}', parameters('accountName'), parameters('databaseName'), parameters('containerName'))]",
+      "properties": {
+        "resource": {
+          "id": "[parameters('containerName')]",
+          "partitionKey": {
+            "paths": [
+              "/sentiment"
+            ],
+            "kind": "Hash"
+          },
+          "defaultTtl": -1
+        },
+        "options": {
+          "throughput": 400
+        }
+      }
+    }
+  ]
+}
