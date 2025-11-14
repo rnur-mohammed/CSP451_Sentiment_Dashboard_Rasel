@@ -1,0 +1,4 @@
+body { font-family: Arial; padding: 20px; }
+textarea { width: 400px; height: 150px; }
+button { padding: 10px 20px; margin-top: 10px; }
+#result { margin-top: 20px; font-size: 20px; }
