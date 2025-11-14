@@ -1,0 +1,98 @@
+{
+  "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "textAnalyticsEndpoint": {
+      "type": "string",
+      "defaultValue": "<YOUR_TEXT_ANALYTICS_ENDPOINT>"
+    },
+    "textAnalyticsKey": {
+      "type": "string",
+      "defaultValue": "<YOUR_TEXT_ANALYTICS_KEY>"
+    },
+    "cosmosConnectionString": {
+      "type": "string",
+      "defaultValue": "<YOUR_COSMOS_CONNECTION_STRING>"
+    }
+  },
+  "triggers": {
+    "manual": {
+      "type": "Request",
+      "kind": "Http",
+      "inputs": {
+        "schema": {
+          "type": "object",
+          "properties": {
+            "text": { "type": "string" }
+          },
+          "required": [ "text" ]
+        }
+      }
+    }
+  },
+  "actions": {
+    "Call_Text_Analytics": {
+      "type": "Http",
+      "inputs": {
+        "method": "POST",
+        "uri": "@concat(parameters('textAnalyticsEndpoint'), '/text/analytics/v3.2-preview.2/sentiment')",
+        "headers": {
+          "Ocp-Apim-Subscription-Key": "@parameters('textAnalyticsKey')",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "documents": [
+            {
+              "id": "1",
+              "language": "en",
+              "text": "@triggerBody()?['text']"
+            }
+          ]
+        }
+      },
+      "runAfter": {}
+    },
+    "Compose_Result": {
+      "type": "Compose",
+      "inputs": {
+        "text": "@triggerBody()?['text']",
+        "sentiment": "@body('Call_Text_Analytics')?['documents'][0]?['sentiment']",
+        "scores": "@body('Call_Text_Analytics')?['documents'][0]?['confidenceScores']",
+        "phrases": "@body('Call_Text_Analytics')?['documents'][0]?['keyPhrases']",
+        "timestamp": "@utcNow()"
+      },
+      "runAfter": {
+        "Call_Text_Analytics": [ "Succeeded" ]
+      }
+    },
+    "Insert_Into_Cosmos": {
+      "type": "ApiConnection",
+      "inputs": {
+        "host": {
+          "connection": {
+            "name": "@parameters('$connections')['documentdb']['connectionId']"
+          }
+        },
+        "method": "post",
+        "path": "/dbs/<DB_NAME>/colls/<CONTAINER_NAME>/docs",
+        "body": {
+          "id": "@guid()",
+          "text": "@outputs('Compose_Result')?['text']",
+          "sentiment": "@outputs('Compose_Result')?['sentiment']",
+          "scores": "@outputs('Compose_Result')?['scores']",
+          "phrases": "@outputs('Compose_Result')?['phrases']",
+          "timestamp": "@outputs('Compose_Result')?['timestamp']"
+        }
+      },
+      "runAfter": {
+        "Compose_Result": [ "Succeeded" ]
+      }
+    }
+  },
+  "outputs": {
+    "response": {
+      "type": "object",
+      "value": "@outputs('Compose_Result')"
+    }
+  }
+}
